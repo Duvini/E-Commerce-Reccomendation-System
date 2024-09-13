@@ -43,12 +43,6 @@ def truncate(text, length):
         return text
 
 
-
-
-
-
-
-
 def content_based_recommendations(train_data, item_name, top_n=10):
     # Split the item_name into words
     search_terms = set(item_name.lower().split())
@@ -196,7 +190,17 @@ def recommendations():
     content_based_rec = pd.DataFrame()  # Default to an empty DataFrame
     if request.method == 'POST':
         prod = request.form.get('prod')
-        nbr = int(request.form.get('nbr'))
+        nbr = request.form.get('nbr')
+
+        # If nbr is not provided or is an empty string, return all possible recommendations
+        if not nbr or nbr.strip() == '':
+            nbr = len(train_data)  # Default to all available products
+        else:
+            try:
+                nbr = int(nbr)
+            except ValueError:
+                nbr = 10  # Default to 10 if the conversion fails
+
         content_based_rec = content_based_recommendations(train_data, prod, top_n=nbr)
 
     # Create a list of random image URLs for each recommended product
