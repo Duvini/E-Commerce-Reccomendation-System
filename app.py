@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import re
+from sklearn.metrics import pairwise_distances
 
 
 app = Flask(__name__)
@@ -44,76 +45,50 @@ def truncate(text, length):
 
 def get_trending_products():
     # Calculate average ratings and get top rated items
-    average_ratings = train_data.groupby(['Name', 'ReviewCount', 'Brand', 'ImageURL'], as_index=False).agg({'Rating': 'mean'})
+    average_ratings = train_data.groupby(['Name', 'ReviewCount', 'Brand','Price', 'ImageURL'], as_index=False).agg({'Rating': 'mean'})
     top_rated_items = average_ratings.sort_values(by='Rating', ascending=False).head(12)
     return top_rated_items
 
-def content_based_recommendations(train_data, item_name, top_n=10):
+
+
+def content_based_recommendations(train_data, item_name, top_n=40):
     # Split the item_name into words
     search_terms = set(item_name.lower().split())
 
-    # Create a function to check for whole word matches using word boundaries
-    def word_match(name, terms):
-        name_tokens = set(re.findall(r'\b\w+\b', name.lower()))
-        return bool(name_tokens.intersection(terms))
+    # Create a TF-IDF vectorizer for the 'Tags' column
+    tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_df=0.8, min_df=2, ngram_range=(1, 2))
     
-    # Find items where the whole word matches any of the search terms in the 'Name' column
-    matching_indices = train_data.index[train_data['Name'].apply(lambda name: word_match(name, search_terms))]
+    # Fit the vectorizer to the entire dataset to use for all items
+    tfidf_matrix_all = tfidf_vectorizer.fit_transform(train_data['Tags'])
 
-    if len(matching_indices) == 0:
+    # Get the TF-IDF vector for the searched item (if found)
+    try:
+        searched_item_index = train_data[train_data['Name'].str.lower().str.contains('|'.join(search_terms))].index[0]
+        searched_item_vector = tfidf_matrix_all[searched_item_index]
+    except IndexError:
         print(f"No items found matching any of the terms in '{item_name}'.")
         return pd.DataFrame()
 
-    # Filter the dataframe to include only matching items
-    filtered_data = train_data.loc[matching_indices]
+    # Calculate Euclidean distance for all items against the searched item
+    distances = pairwise_distances(searched_item_vector, tfidf_matrix_all, metric='euclidean').flatten()
 
-    if filtered_data.empty:
-        return pd.DataFrame()
+    # Create a DataFrame of similar items
+    similar_items_df = pd.DataFrame({
+        'Index': train_data.index,
+        'Distance': distances
+    })
 
-    # Create a TF-IDF vectorizer for the 'Tags' column with adjustments to extract meaningful words
-    tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_df=0.8, min_df=2, ngram_range=(1, 2))
-
-    # Apply TF-IDF vectorization to the 'Tags' column
-    tfidf_matrix_content = tfidf_vectorizer.fit_transform(filtered_data['Tags'])
-
-    # Calculate cosine similarity between items based on their 'Tags'
-    cosine_similarities_content = cosine_similarity(tfidf_matrix_content, tfidf_matrix_content)
-
-    # Dictionary to store results
-    all_similar_items = []
-
-    # Map the original indices to their positions in the filtered data
-    index_map = {original_index: pos for pos, original_index in enumerate(filtered_data.index)}
-
-    for idx, item_index in enumerate(filtered_data.index):
-        # Use the mapped position in the cosine similarity matrix
-        matrix_pos = index_map[item_index]
-        
-        # Ensure the matrix_pos is within bounds
-        if matrix_pos >= len(cosine_similarities_content):
-            print(f"Index {matrix_pos} is out of bounds for cosine similarity matrix.")
-            continue
-
-        similar_items = list(enumerate(cosine_similarities_content[matrix_pos]))
-        similar_items = sorted(similar_items, key=lambda x: x[1], reverse=True)
-        top_similar_items = similar_items[1:top_n+1]  # Exclude the item itself
-        
-        for sim_index, score in top_similar_items:
-            original_index = filtered_data.index[sim_index]
-            all_similar_items.append((original_index, score))
-
-    # Create a DataFrame from the collected similar items
-    all_similar_items_df = pd.DataFrame(all_similar_items, columns=['Index', 'Score'])
-
-    # Remove duplicates and get the top_n recommendations
-    all_similar_items_df = all_similar_items_df.drop_duplicates(subset='Index')
-    top_similar_items_df = all_similar_items_df.nlargest(top_n, 'Score')
+    # Remove the searched item from recommendations and get top_n items with the smallest distances
+    similar_items_df = similar_items_df[similar_items_df['Index'] != searched_item_index]
+    top_similar_items_df = similar_items_df.nsmallest(top_n, 'Distance')
 
     # Get the recommended item details
     recommended_item_indices = top_similar_items_df['Index']
-    recommended_items_details = train_data.loc[recommended_item_indices][['Name', 'ReviewCount', 'Brand', 'ImageURL', 'Rating']]
+    recommended_items_details = train_data.loc[recommended_item_indices][['Name', 'ReviewCount', 'Brand', 'Price', 'ImageURL', 'Rating']]
 
     return recommended_items_details
+
+
 
 
 
@@ -139,7 +114,7 @@ def index():
 # If you want to conv
     # Get actual images from the trending_products DataFrame
     product_image_urls = trending_products['ImageURL'].tolist()  # Ensure your DataFrame has this column
-    prices = list(custom_prices)  # Ensure your DataFrame has this column
+    prices = trending_products['Price'].tolist()  # Ensure your DataFrame has this column
 
     return render_template('index.html', 
                            trending_products=trending_products, 
