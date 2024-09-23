@@ -42,6 +42,11 @@ def truncate(text, length):
     else:
         return text
 
+def get_trending_products():
+    # Calculate average ratings and get top rated items
+    average_ratings = train_data.groupby(['Name', 'ReviewCount', 'Brand', 'ImageURL'], as_index=False).agg({'Rating': 'mean'})
+    top_rated_items = average_ratings.sort_values(by='Rating', ascending=False).head(10)
+    return top_rated_items
 
 def content_based_recommendations(train_data, item_name, top_n=10):
     # Split the item_name into words
@@ -128,12 +133,19 @@ random_image_urls = [
 
 @app.route("/")
 def index():
-    # Create a list of random image URLs for each product
-    random_product_image_urls = [random.choice(random_image_urls) for _ in range(len(trending_products))]
-    price = [40, 50, 60, 70, 100, 122, 106, 50, 30, 50]
-    return render_template('index.html',trending_products=trending_products.head(8),truncate = truncate,
-                           random_product_image_urls=random_product_image_urls,
-                           random_price = random.choice(price))
+    trending_products = get_trending_products()
+    custom_prices = {5.79, 42.44, 58.91, 2.3, 26.85, 13.58, 10, 20.99, 15.55, 29.25}
+
+# If you want to conv
+    # Get actual images from the trending_products DataFrame
+    product_image_urls = trending_products['ImageURL'].tolist()  # Ensure your DataFrame has this column
+    prices = list(custom_prices)  # Ensure your DataFrame has this column
+
+    return render_template('index.html', 
+                           trending_products=trending_products, 
+                           truncate=truncate,
+                           product_image_urls=product_image_urls,
+                           prices=prices)
 
 @app.route("/main")
 def main():
@@ -142,15 +154,24 @@ def main():
 # routes
 @app.route("/index")
 def indexredirect():
-    # Create a list of random image URLs for each product
-    random_product_image_urls = [random.choice(random_image_urls) for _ in range(len(trending_products))]
-    price = [40, 50, 60, 70, 100, 122, 106, 50, 30, 50]
-    return render_template('index.html', trending_products=trending_products.head(8), truncate=truncate,
-                           random_product_image_urls=random_product_image_urls,
-                           random_price=random.choice(price))
+
+    # Get actual images and prices from the trending_products DataFrame
+    product_image_urls = trending_products['ImageURL'].tolist()  # Ensure your DataFrame has this column
+    prices = trending_products['Price'].tolist() # Ensure your DataFrame has this column
+
+    return render_template('index.html', trending_products=trending_products, 
+                           truncate=truncate,
+                           product_image_urls=product_image_urls,
+                           prices=prices)
 
 @app.route("/signup", methods=['POST','GET'])
 def signup():
+
+    
+    # Get actual images and prices from the trending_products DataFrame
+    product_image_urls = trending_products['ImageURL'].tolist()  # Ensure your DataFrame has this column
+    prices = trending_products['Price'].tolist() # Ensure your DataFrame has this column
+
     if request.method=='POST':
         username = request.form['username']
         email = request.form['email']
@@ -160,17 +181,21 @@ def signup():
         db.session.add(new_signup)
         db.session.commit()
 
-        # Create a list of random image URLs for each product
-        random_product_image_urls = [random.choice(random_image_urls) for _ in range(len(trending_products))]
-        price = [40, 50, 60, 70, 100, 122, 106, 50, 30, 50]
-        return render_template('index.html', trending_products=trending_products.head(8), truncate=truncate,
-                               random_product_image_urls=random_product_image_urls, random_price=random.choice(price),
-                               signup_message='User signed up successfully!'
+        return render_template('index.html', trending_products=trending_products, 
+                           truncate=truncate,
+                           product_image_urls=product_image_urls,
+                           prices=prices,
+                           signup_message='User signed up successfully!'
                                )
 
 # Route for signup page
 @app.route('/signin', methods=['POST', 'GET'])
 def signin():
+
+    # Get actual images and prices from the trending_products DataFrame
+    product_image_urls = trending_products['ImageURL'].tolist()  # Ensure your DataFrame has this column
+    prices = trending_products['Price'].tolist() # Ensure your DataFrame has this column
+
     if request.method == 'POST':
         username = request.form['signinUsername']
         password = request.form['signinPassword']
@@ -178,11 +203,10 @@ def signin():
         db.session.add(new_signup)
         db.session.commit()
 
-        # Create a list of random image URLs for each product
-        random_product_image_urls = [random.choice(random_image_urls) for _ in range(len(trending_products))]
-        price = [40, 50, 60, 70, 100, 122, 106, 50, 30, 50]
-        return render_template('index.html', trending_products=trending_products.head(8), truncate=truncate,
-                               random_product_image_urls=random_product_image_urls, random_price=random.choice(price),
+        return render_template('index.html', trending_products=trending_products, 
+                           truncate=truncate,
+                           product_image_urls=product_image_urls,
+                           prices=prices,
                                signup_message='User signed in successfully!'
                                )
 @app.route("/recommendations", methods=['POST', 'GET'])
@@ -203,19 +227,17 @@ def recommendations():
 
         content_based_rec = content_based_recommendations(train_data, prod, top_n=nbr)
 
-    # Create a list of random image URLs for each recommended product
-    random_product_image_urls = [random.choice(random_image_urls) for _ in range(len(trending_products))]
-    price = [40, 50, 60, 70, 100, 122, 106, 50, 30, 50]
 
-    if content_based_rec.empty:
-        message = "No recommendations available for this product."
-        return render_template('main.html', content_based_rec=content_based_rec, message=message, truncate=truncate,
-                               random_product_image_urls=random_product_image_urls,
-                               random_price=random.choice(price))
-    else:
+    if not content_based_rec.empty:
+        product_image_urls = content_based_rec['ImageURL'].tolist()
+        prices = trending_products['Price'].tolist() 
+
         return render_template('main.html', content_based_rec=content_based_rec, truncate=truncate,
-                               random_product_image_urls=random_product_image_urls,
-                               random_price=random.choice(price))
+                               product_image_urls=product_image_urls,
+                               prices=prices)
+
+    message = "No recommendations available for this product."
+    return render_template('main.html', content_based_rec=content_based_rec, message=message, truncate=truncate)
 
 
 if __name__=='__main__':
