@@ -45,7 +45,7 @@ def truncate(text, length):
 def get_trending_products():
     # Calculate average ratings and get top rated items
     average_ratings = train_data.groupby(['Name', 'ReviewCount', 'Brand', 'ImageURL'], as_index=False).agg({'Rating': 'mean'})
-    top_rated_items = average_ratings.sort_values(by='Rating', ascending=False).head(10)
+    top_rated_items = average_ratings.sort_values(by='Rating', ascending=False).head(12)
     return top_rated_items
 
 def content_based_recommendations(train_data, item_name, top_n=10):
@@ -134,7 +134,7 @@ random_image_urls = [
 @app.route("/")
 def index():
     trending_products = get_trending_products()
-    custom_prices = {5.79, 42.44, 58.91, 2.3, 26.85, 13.58, 10, 20.99, 15.55, 29.25}
+    custom_prices = {5.79, 42.44, 58.91, 2.3, 26.85, 13.58, 10, 20.99, 15.55, 29.25,20,45}
 
 # If you want to conv
     # Get actual images from the trending_products DataFrame
