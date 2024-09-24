@@ -7,23 +7,41 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
+         .container {
+            margin-top: 50px;
+        }
+        .video-background {
+            width: 100%;
+            height: 500px; /* Set the height of the video here */
+            object-fit: cover; /* Ensure the video covers the entire container */
+        }
         body {
             background-color: #f8f9fa;
         }
         .navbar {
+            background-color: #343a40;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
+        .navbar-brand {
+            color: #fff !important;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .navbar-nav .nav-link {
+            color: #fff !important;
+            font-size: 1.1rem;
+            margin-right: 1rem;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #f39c12 !important;
+        }
+        .navbar-toggler {
+            border-color: #fff;
+        }
+        .btn-custom {
+            border-radius: 30px;
+        }
 
-        .nav-link:hover {
-            color: orange !important; /* Change text color on hover */
-        }
-        .nav-link.btn {
-            border-radius: 5px; /* Add rounded corners to buttons */
-        }
-        /* Additional styles for modal */
-        .modal-body {
-            text-align: center;
-        }
         .modal-content {
             background-color: #fff; /* Set modal content background color */
             color: #000; /* Set modal content text color */
@@ -37,9 +55,10 @@
 <body>
 
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand mx-auto" href="#">Ecommerce Recommendation System</a>
+
+<!-- Modern Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <a class="navbar-brand" href="#">Personalized Ecommerce Recommendation System</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -52,28 +71,52 @@
         <a class="nav-link" href="#" id="settingsLink"><i class="fas fa-cog"></i> Settings</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link btn btn-outline-primary mr-2" href="#" data-toggle="modal" data-target="#signupModal">Sign Up</a>
+        <a class="nav-link btn btn-outline-light btn-custom" href="#" data-toggle="modal" data-target="#signupModal">Sign Up</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link btn btn-primary" href="#" data-toggle="modal" data-target="#signinModal">Sign In</a>
+        <a class="nav-link btn btn-warning btn-custom" href="#" data-toggle="modal" data-target="#signinModal">Sign In</a>
       </li>
     </ul>
   </div>
 </nav>
 
 
-<!-- Search Bar -->
-<div class="container" style="margin-top:30px;">
-    <form action="/recommendations" method="post" style="display:flex;">
-            <input type="text" class="form-control mr-2" name="prod" placeholder="Search for products...">
-            <input type="number" class="form-control" name="nbr" placeholder="Number of products..." style="width:100px;">
-            <button class="btn btn-primary">Search</button>
-    </form>
+<!-- Button to Open the Search Modal -->
+<div class="container mt-4">
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#searchModal">
+      Open Search
+  </button>
+</div>
+
+<!-- Search Modal -->
+<div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="searchModalLabel">Search for Products</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <form action="/recommendations" method="post" style="display: flex; flex-direction: column;">
+                  <input type="text" class="form-control mb-2" name="prod" placeholder="Search for products..." required>
+                  <input type="number" class="form-control mb-2" name="nbr" placeholder="Number of products..." style="width: 100px;" >
+                  <button type="submit" class="btn btn-primary">Search</button>
+              </form>
+          </div>
+      </div>
+  </div>
 </div>
 
 {% if message %}
 <h5 style="margin-left:42%;margin-top:10px;">{{message}}</h5>
 {% endif %}
+
+<!-- jQuery and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
 
 <!--trending recommendations-->
 <!--'Name', 'ReviewCount', 'Brand', 'ImageURL', 'Rating'-->
@@ -85,12 +128,14 @@
     {% for index, product in content_based_rec.iterrows() %}
     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
       <div class="card">
-          <img src="{{ product['ImageURL'] }}" class="card-img-top" alt="{{ product['Name'] }}" style="height: 200px;">
-        <div class="card-body">
-          <h5 class="card-title">{{ truncate(product['Name'],12) }}</h5>
-          <p class="card-text">Brand: {{ product['Brand'] }}</p>
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#productModal{{ index }}">Buy Now</button>
+          <img src="{{ product['ImageURL'] }}" class="card-img-top" alt="{{ product['Name'] }}" style="height: 150px; object-fit: contain;">
+        <div class="card-body" >
+          <h5 class="card-title">{{ truncate(product['Name'], 12) }}</h5>
+          <p class="card-text text-muted">Brand: {{ product['Brand'] }}</p>
+          <p class="card-text">Rating: <strong>{{ product['Rating'] | round(2) }}</strong></p>
+          <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#productModal{{ index }}">Buy Now</button>
         </div>
+      
       </div>
     </div>
     <!-- Modal -->
@@ -303,11 +348,11 @@
             <div class="col-md-3 col-sm-6">
                 <h5>Contact Us</h5>
                 <address>
-                    <strong>Company Name</strong><br>
-                    123 Street, City<br>
-                    Country<br>
-                    <i class="fas fa-phone"></i> Phone: +1234567890<br>
-                    <i class="fas fa-envelope"></i> Email: info@example.com
+                    <strong>DataWizards</strong><br>
+                    Temple Street, Malmbe<br>
+                    Sri Lanka<br>
+                    <i class="fas fa-phone"></i> Phone: +9411567890<br>
+                    <i class="fas fa-envelope"></i> Email: info@datawizard.com
                 </address>
             </div>
         </div>

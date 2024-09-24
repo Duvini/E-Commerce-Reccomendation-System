@@ -8,25 +8,72 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <style>
-     body {
-            background-color: #f8f9fa;
-        }
-        .navbar {
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-        }
+     
+     .btn-custom {
+  background-color: #FA5B3D; /* Custom button color */
+  border-color: #FA5B3D;
+  border-radius: 30px; /* Rounded edges */
+  padding: 10px 20px; /* Increased padding */
+  font-weight: bold; /* Bold text */
+  transition: background-color 0.3s ease; /* Smooth color transition */
+  color: white; /* Text color */
+}
+
+.btn-custom:hover {
+  background-color: #e04e3d; /* Slightly darker shade on hover */
+  border-color: #e04e3d;
+}
+.btn-custom2 {
+  background-color: #FA5B3D; /* Custom button color */
+  border-color: #FA5B3D;  
+  color: white; /* Text color */
+}
+
+.btn-custom2:hover {
+  background-color: #e04e3d; /* Slightly darker shade on hover */
+  border-color: #e04e3d;
+}
+.btn-custom3 {
+  background-color: #FA8072; /* Custom button color */
+  border-color: #FA8072;
+  transition: background-color 0.3s ease; /* Smooth color transition */
+  color: white; /* Text color */
+}
+
+      
         .container {
             margin-top: 50px;
         }
         .video-background {
             width: 100%;
-            height: 400px; /* Set the height of the video here */
+            height: 600px; /* Set the height of the video here */
             object-fit: cover; /* Ensure the video covers the entire container */
         }
-        .nav-link:hover {
-            color: orange !important; /* Change text color on hover */
+        body {
+            background-color: #f8f9fa;
         }
-        .nav-link.btn {
-            border-radius: 5px; /* Add rounded corners to buttons */
+        .navbar {
+            background-color: #555c64;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-brand {
+            color: #fff !important;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .navbar-nav .nav-link {
+            color: #fff !important;
+            font-size: 1.1rem;
+            margin-right: 1rem;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #ff7f50 !important;
+        }
+        .navbar-toggler {
+            border-color: #fff;
+        }
+        .btn-custom {
+            border-radius: 30px;
         }
 
         .modal-content {
@@ -40,9 +87,9 @@
 </style>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand mx-auto" href="#">Ecommerce Recommendation System</a>
+<!-- Modern Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <a class="navbar-brand" href="#">Personalized Ecommerce Recommendation System</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -51,15 +98,14 @@
       <li class="nav-item active">
         <a class="nav-link" href="#"><i class="fas fa-home"></i> Home</a>
       </li>
-
       <li class="nav-item">
         <a class="nav-link" href="#" id="settingsLink"><i class="fas fa-cog"></i> Settings</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link btn btn-outline-primary mr-2" href="#" data-toggle="modal" data-target="#signupModal">Sign Up</a>
+        <a class="nav-link btn btn-outline-light btn-custom3" href="#" data-toggle="modal" data-target="#signupModal">Sign Up</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link btn btn-primary" href="#" data-toggle="modal" data-target="#signinModal">Sign In</a>
+        <a class="nav-link btn btn-outline-light  btn-custom3" href="#" data-toggle="modal" data-target="#signinModal">Sign In</a>
       </li>
     </ul>
   </div>
@@ -80,8 +126,44 @@
 
 <!-- Go To Main Page Button -->
 <div class="text-center mt-5">
-  <a  href="main" class="btn btn-primary btn-lg">Go To Main Page</a>
+  <button type="button" class="btn btn-custom btn-lg" data-toggle="modal" data-target="#searchModal">
+    <i class="fas fa-search"></i> <!-- Font Awesome Search Icon -->
+    Search Products
+  </button>
 </div>
+
+
+
+
+<!-- Search Modal -->
+<div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="searchModalLabel">Search for Products</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <form action="/recommendations" method="post" style="display: flex; flex-direction: column;">
+                  <input type="text" class="form-control mb-2" name="prod" placeholder="Search for products..." required>
+                  <input type="number" class="form-control mb-2" name="nbr" placeholder="Number of products..." style="width: 100px;">
+                  <button type="submit" class="btn btn-custom btn-lg">Search</button>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+{% if message %}
+<h5 style="margin-left:42%;margin-top:10px;">{{message}}</h5>
+{% endif %}
+
+<!-- jQuery and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
 
 {% if signup_message %}
 <h5 style="margin-left:42%;margin-top:10px; text:bold;">{{signup_message}}</h5>
@@ -92,20 +174,23 @@
   <div class="row mt-4">
     {% for index, product in trending_products.iterrows() %}
     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-      <div class="card">
-        <img src="{{ product['ImageURL'] }}" class="card-img-top" alt="{{ product['Name'] }}" style="height: 200px;">
-        <div class="card-body">
+      <div class="card h-100 shadow-sm border-0 rounded-lg">
+        <div class="card-img-container" style="overflow: hidden; border-top-left-radius: 15px; border-top-right-radius: 15px;">
+          <img src="{{ product['ImageURL'] }}" class="card-img-top img-fluid" alt="{{ product['Name'] }}" style="height: 200px; object-fit: contain;">
+        </div>
+        <div class="card-body" >
           <h5 class="card-title">{{ truncate(product['Name'], 12) }}</h5>
-          <p class="card-text">Brand: {{ product['Brand'] }}</p>
-          <p class="card-text">Rating: {{ product['Rating'] | round(2) }}</p>
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#productModal{{ index }}">Buy Now</button>
+          <p class="card-text text-muted">Brand: {{ product['Brand'] }}</p>
+          <p class="card-text">Rating: <strong>{{ product['Rating'] | round(2) }}</strong></p>
+          <button type="button" class="btn btn-custom3" data-toggle="modal" data-target="#productModal{{ index }}">Buy Now</button>
         </div>
       </div>
     </div>
+
     <!-- Modal -->
     <div class="modal fade" id="productModal{{ index }}" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content rounded-lg">
           <div class="modal-header">
             <h5 class="modal-title" id="productModalLabel">{{ product['Name'] }}</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -115,7 +200,7 @@
           <div class="modal-body">
             <div class="row">
               <div class="col-md-4">
-                <img src="{{ product['ImageURL'] }}" class="img-fluid" alt="{{ product['Name'] }}" style="height: 200px;">
+                <img src="{{ product['ImageURL'] }}" class="img-fluid rounded" alt="{{ product['Name'] }}" style="height: 200px;">
               </div>
               <div class="col-md-8">
                 <p><strong>Brand:</strong> {{ product['Brand'] }}</p>
@@ -127,7 +212,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Add to Cart</button>
+            <button type="button" class="btn btn-custom2 ">Add to Cart</button>
           </div>
         </div>
       </div>
@@ -135,6 +220,7 @@
     {% endfor %}
   </div>
 </div>
+
 
 
 
@@ -227,12 +313,12 @@
         </div>
         <hr>
         <h5>Zoom:</h5>
-        <button type="button" class="btn btn-primary mr-2" id="zoomIn">Zoom In</button>
-        <button type="button" class="btn btn-primary" id="zoomOut">Zoom Out</button>
+        <button type="button" class="btn btn-custom2  mr-2" id="zoomIn">Zoom In</button>
+        <button type="button" class="btn btn-custom2 " id="zoomOut">Zoom Out</button>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="applyTheme">Apply</button>
+        <button type="button" class="btn btn-warning" id="applyTheme">Apply</button>
       </div>
     </div>
   </div>
@@ -284,48 +370,48 @@
 
 
 <!--footer-->
-<footer class="footer bg-dark text-white">
-    <div class="container" style="padding-top:20px;">
-        <div class="row">
-            <div class="col-md-3 col-sm-6">
-                <h5>About Us</h5>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla pretium risus quis urna maximus, eget vestibulum risus vestibulum.</p>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <h5>Quick Links</h5>
-                <ul class="list-unstyled">
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Services</a></li>
-                    <li><a href="#">Contact</a></li>
-                </ul>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <h5>Support</h5>
-                <ul class="list-unstyled">
-                    <li><a href="#">FAQ</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                </ul>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <h5>Contact Us</h5>
-                <address>
-                    <strong>Company Name</strong><br>
-                    123 Street, City<br>
-                    Country<br>
-                    <i class="fas fa-phone"></i> Phone: +1234567890<br>
-                    <i class="fas fa-envelope"></i> Email: info@example.com
-                </address>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-md-12">
-                <hr class="bg-light">
-                <p class="text-center">© 2024 Ecommerce Recommendation System. All Rights Reserved.</p>
-            </div>
-        </div>
-    </div>
+<footer class="footer" style="background-color: #555c64; color: #ffffff;  margin-top: 300px;"> <!-- Light gray background -->
+  <div class="container" style="padding-top:20px;">
+      <div class="row">
+          <div class="col-md-3 col-sm-6">
+              <h5>About Us</h5>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla pretium risus quis urna maximus, eget vestibulum risus vestibulum.</p>
+          </div>
+          <div class="col-md-3 col-sm-6">
+              <h5>Quick Links</h5>
+              <ul class="list-unstyled">
+                  <li><a href="#">Home</a></li>
+                  <li><a href="#">About</a></li>
+                  <li><a href="#">Services</a></li>
+                  <li><a href="#">Contact</a></li>
+              </ul>
+          </div>
+          <div class="col-md-3 col-sm-6">
+              <h5>Support</h5>
+              <ul class="list-unstyled">
+                  <li><a href="#">FAQ</a></li>
+                  <li><a href="#">Terms of Service</a></li>
+                  <li><a href="#">Privacy Policy</a></li>
+              </ul>
+          </div>
+          <div class="col-md-3 col-sm-6">
+              <h5>Contact Us</h5>
+              <address>
+                <strong>DataWizards</strong><br>
+                Temple Street, Malmbe<br>
+                Sri Lanka<br>
+                <i class="fas fa-phone"></i> Phone: +9411567890<br>
+                <i class="fas fa-envelope"></i> Email: info@datawizard.com
+            </address>
+          </div>
+      </div>
+      <div class="row mt-3">
+          <div class="col-md-12">
+              <hr class="bg-light">
+              <p class="text-center">© 2024 Ecommerce Recommendation System. All Rights Reserved.</p>
+          </div>
+      </div>
+  </div>
 </footer>
 
 
