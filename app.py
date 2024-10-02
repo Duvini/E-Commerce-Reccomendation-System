@@ -1,67 +1,44 @@
 from flask import Flask, request, render_template
 import pandas as pd
-import random
 from flask_sqlalchemy import SQLAlchemy
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import re
 from sklearn.metrics import pairwise_distances
-
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
-# load files===========================================================================================================
+# Load files
 trending_products = pd.read_csv("models/trending_products.csv")
 train_data = pd.read_csv("models/clean_data.csv")
 
-# database configuration---------------------------------------
-app.secret_key = "alskdjfwoeieiurlskdjfslkdjf"
+# Database configuration
+app.secret_key = "your_secret_key"
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:@localhost/ecom"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-
-# Define your model class for the 'signup' table
+# Define model classes for 'signup' and 'signin' tables
 class Signup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(100), nullable=False)
 
-# Define your model class for the 'signup' table
-class Signin(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), nullable=False)
-    password = db.Column(db.String(100), nullable=False)
-
-
-# Recommendations functions============================================================================================
-# Function to truncate product name
+# Recommendations functions# Recommendations functions
 def truncate(text, length):
-    if len(text) > length:
-        return text[:length] + "..."
-    else:
-        return text
+    return text[:length] + "..." if len(text) > length else text
+
 
 def get_trending_products():
-    # Calculate average ratings and get top rated items
-    average_ratings = train_data.groupby(['Name', 'ReviewCount', 'Brand','Price', 'ImageURL'], as_index=False).agg({'Rating': 'mean'})
-    top_rated_items = average_ratings.sort_values(by='Rating', ascending=False).head(12)
-    return top_rated_items
-
-
+    average_ratings = train_data.groupby(['Name', 'ReviewCount', 'Brand', 'Price', 'ImageURL'], as_index=False).agg({'Rating': 'mean'})
+    return average_ratings.sort_values(by='Rating', ascending=False).head(12)
 
 def content_based_recommendations(train_data, item_name, top_n=40):
-    # Split the item_name into words
     search_terms = set(item_name.lower().split())
-
-    # Create a TF-IDF vectorizer for the 'Tags' column
     tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_df=0.8, min_df=2, ngram_range=(1, 2))
-    
-    # Fit the vectorizer to the entire dataset to use for all items
     tfidf_matrix_all = tfidf_vectorizer.fit_transform(train_data['Tags'])
 
-    # Get the TF-IDF vector for the searched item (if found)
     try:
         searched_item_index = train_data[train_data['Name'].str.lower().str.contains('|'.join(search_terms))].index[0]
         searched_item_vector = tfidf_matrix_all[searched_item_index]
@@ -69,151 +46,137 @@ def content_based_recommendations(train_data, item_name, top_n=40):
         print(f"No items found matching any of the terms in '{item_name}'.")
         return pd.DataFrame()
 
-    # Calculate Euclidean distance for all items against the searched item
     distances = pairwise_distances(searched_item_vector, tfidf_matrix_all, metric='euclidean').flatten()
-
-    # Create a DataFrame of similar items
-    similar_items_df = pd.DataFrame({
-        'Index': train_data.index,
-        'Distance': distances
-    })
-
-    # Remove the searched item from recommendations and get top_n items with the smallest distances
+    similar_items_df = pd.DataFrame({'Index': train_data.index, 'Distance': distances})
     similar_items_df = similar_items_df[similar_items_df['Index'] != searched_item_index]
     top_similar_items_df = similar_items_df.nsmallest(top_n, 'Distance')
 
-    # Get the recommended item details
     recommended_item_indices = top_similar_items_df['Index']
-    recommended_items_details = train_data.loc[recommended_item_indices][['Name', 'ReviewCount', 'Brand', 'Price', 'ImageURL', 'Rating']]
+    return train_data.loc[recommended_item_indices][['Name', 'ReviewCount', 'Brand', 'Price', 'ImageURL', 'Rating']]
 
-    return recommended_items_details
+def collaborative_filtering_recommendations(train_data, target_user_id, top_n):
+    # Create a user-item matrix
+    user_item_matrix = train_data.pivot_table(index='ID', columns='ProdID', values='Rating', aggfunc='mean').fillna(0)
+
+    # Check if the target user ID is in the user-item matrix
+    if target_user_id not in user_item_matrix.index:
+        return pd.DataFrame()  # Return empty DataFrame if user_id is not found
+
+    # Calculate cosine similarity between users
+    user_similarity = cosine_similarity(user_item_matrix)
+    
+    # Get the index of the target user
+    target_user_index = user_item_matrix.index.get_loc(target_user_id)
+
+    # Get similarity scores for the target user
+    user_similarities = user_similarity[target_user_index]
+
+    # Get indices of similar users, ignoring the target user
+    similar_users_indices = user_similarities.argsort()[::-1][1:]  
+
+    recommended_items = set()
+    
+    # Loop through similar users
+    for user_index in similar_users_indices:
+        # Get products rated by the similar user
+        rated_by_similar_user = user_item_matrix.iloc[user_index]
+        
+        # Check which items the target user hasn't rated
+        not_rated_by_target_user = (rated_by_similar_user > 0) & (user_item_matrix.iloc[target_user_index] == 0)
+
+        # Update recommended items with new products
+        recommended_items.update(user_item_matrix.columns[not_rated_by_target_user][:top_n])
+
+        # Stop if we have enough recommendations
+        if len(recommended_items) >= top_n:
+            break
+
+    # Filter recommended products from the original train_data
+    recommended_products = train_data[train_data['ProdID'].isin(recommended_items)][['Name', 'ReviewCount', 'Brand', 'ImageURL', 'Price', 'Rating']]
+    
+    return recommended_products.head(top_n)  # Ensure you return at most top_n products
 
 
 
-
-
-# routes===============================================================================
-# List of predefined image URLs
-random_image_urls = [
-    "static/img/img_1.png",
-    "static/img/img_2.png",
-    "static/img/img_3.png",
-    "static/img/img_4.png",
-    "static/img/img_5.png",
-    "static/img/img_6.png",
-    "static/img/img_7.png",
-    "static/img/img_8.png",
-]
-
-
+# Routes
 @app.route("/")
 def index():
     trending_products = get_trending_products()
-    custom_prices = {5.79, 42.44, 58.91, 2.3, 26.85, 13.58, 10, 20.99, 15.55, 29.25,20,45}
+    return render_template('index.html', trending_products=trending_products, truncate=truncate)
 
-# If you want to conv
-    # Get actual images from the trending_products DataFrame
-    product_image_urls = trending_products['ImageURL'].tolist()  # Ensure your DataFrame has this column
-    prices = trending_products['Price'].tolist()  # Ensure your DataFrame has this column
-
-    return render_template('index.html', 
-                           trending_products=trending_products, 
-                           truncate=truncate,
-                           product_image_urls=product_image_urls,
-                           prices=prices)
-
-@app.route("/main")
-def main():
-    return render_template('main.html')
-
-# routes
-@app.route("/index")
-def indexredirect():
-
-    # Get actual images and prices from the trending_products DataFrame
-    product_image_urls = trending_products['ImageURL'].tolist()  # Ensure your DataFrame has this column
-    prices = trending_products['Price'].tolist() # Ensure your DataFrame has this column
-
-    return render_template('index.html', trending_products=trending_products, 
-                           truncate=truncate,
-                           product_image_urls=product_image_urls,
-                           prices=prices)
-
-@app.route("/signup", methods=['POST','GET'])
+@app.route("/signup", methods=['POST', 'GET'])
 def signup():
-
-    
-    # Get actual images and prices from the trending_products DataFrame
-    product_image_urls = trending_products['ImageURL'].tolist()  # Ensure your DataFrame has this column
-    prices = trending_products['Price'].tolist() # Ensure your DataFrame has this column
-
-    if request.method=='POST':
+    if request.method == 'POST':
         username = request.form['username']
         email = request.form['email']
-        password = request.form['password']
+        password = generate_password_hash(request.form['password'])
 
         new_signup = Signup(username=username, email=email, password=password)
         db.session.add(new_signup)
         db.session.commit()
 
-        return render_template('index.html', trending_products=trending_products, 
-                           truncate=truncate,
-                           product_image_urls=product_image_urls,
-                           prices=prices,
-                           signup_message='User signed up successfully!'
-                               )
+        return render_template('index.html', trending_products=get_trending_products(), truncate=truncate, signup_message='User signed up successfully!')
 
-# Route for signup page
+    return render_template('signup.html')
+
 @app.route('/signin', methods=['POST', 'GET'])
 def signin():
-
-    # Get actual images and prices from the trending_products DataFrame
-    product_image_urls = trending_products['ImageURL'].tolist()  # Ensure your DataFrame has this column
-    prices = trending_products['Price'].tolist() # Ensure your DataFrame has this column
-
     if request.method == 'POST':
         username = request.form['signinUsername']
         password = request.form['signinPassword']
-        new_signup = Signin(username=username,password=password)
-        db.session.add(new_signup)
-        db.session.commit()
 
-        return render_template('index.html', trending_products=trending_products, 
-                           truncate=truncate,
-                           product_image_urls=product_image_urls,
-                           prices=prices,
-                               signup_message='User signed in successfully!'
-                               )
+        user = Signup.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            return render_template('index.html', trending_products=get_trending_products(), truncate=truncate, signup_message='User signed in successfully!')
+        else:
+            return render_template('signin.html', error='Invalid credentials')
+
+    return render_template('signin.html')
+
 @app.route("/recommendations", methods=['POST', 'GET'])
 def recommendations():
-    content_based_rec = pd.DataFrame()  # Default to an empty DataFrame
     if request.method == 'POST':
         prod = request.form.get('prod')
-        nbr = request.form.get('nbr')
-
-        # If nbr is not provided or is an empty string, return all possible recommendations
-        if not nbr or nbr.strip() == '':
-            nbr = len(train_data)  # Default to all available products
-        else:
-            try:
-                nbr = int(nbr)
-            except ValueError:
-                nbr = 10  # Default to 10 if the conversion fails
+        nbr = request.form.get('nbr', default=10, type=int)
 
         content_based_rec = content_based_recommendations(train_data, prod, top_n=nbr)
 
+        if not content_based_rec.empty:
+            product_image_urls = content_based_rec['ImageURL'].tolist()
+            prices = content_based_rec['Price'].tolist()
+            # Pass the truncate function to the template
+            return render_template('main.html', content_based_rec=content_based_rec, product_image_urls=product_image_urls, prices=prices, truncate=truncate)
+        
+        return render_template('main.html', message="No recommendations available for this product.")
 
-    if not content_based_rec.empty:
-        product_image_urls = content_based_rec['ImageURL'].tolist()
-        prices = trending_products['Price'].tolist() 
-
-        return render_template('main.html', content_based_rec=content_based_rec, truncate=truncate,
-                               product_image_urls=product_image_urls,
-                               prices=prices)
-
-    message = "No recommendations available for this product."
-    return render_template('main.html', content_based_rec=content_based_rec, message=message, truncate=truncate)
+    return render_template('main.html', truncate=truncate)
 
 
-if __name__=='__main__':
+
+@app.route("/recommendations_by_user_id", methods=['POST'])
+def recommendations_by_user_id():
+    user_id = request.form['user_id']
+    try:
+        target_user_id = int(user_id)   # Convert user ID to integer
+        collaborative_rec = collaborative_filtering_recommendations(train_data, target_user_id, top_n=10)
+        
+        # Debug: Print the structure of collaborative_rec
+        print("Collaborative Recommendations DataFrame:\n", collaborative_rec)
+        
+        if collaborative_rec.empty:
+            return render_template('forYou.html', content_based_rec=pd.DataFrame(), message="No recommendations available for this user.", truncate=truncate)
+        
+        product_image_urls = collaborative_rec['ImageURL'].tolist()
+        prices = collaborative_rec['Price'].tolist()
+        return render_template('forYou.html', content_based_rec=collaborative_rec, product_image_urls=product_image_urls, prices=prices, truncate=truncate)
+    except ValueError:
+        return render_template('forYou.html', content_based_rec=pd.DataFrame(), message="Invalid User ID format.", truncate=truncate)
+
+
+
+@app.route("/forYou", methods=['GET'])
+def for_you():
+    return render_template('forYou.html', content_based_rec=pd.DataFrame())
+
+if __name__ == '__main__':
     app.run(debug=True)

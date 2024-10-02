@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+    <title>main page</title>
+    
+    <!-- Include jQuery and Bootstrap JS first -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- Include Isotope -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js"></script>
+
+    <!-- Favicon -->
+    <link href="{{ url_for('static', filename='img/favicon.ico') }}" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="{{ url_for('static', filename='lib/animate/animate.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='lib/lightbox/css/lightbox.min.css') }}" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+    <style>
+        /* Ensure the navbar has a high z-index and fixed position */
+        .navbar {
+            z-index: 1030;
+            position: relative; /* or use fixed if needed */
+        }
+
+        /* Add margin-top to avoid overlap */
+        .recommended-products-section {
+            margin-top: 20px; /* Adjust this value as needed */
+        }
+
+        /* Modal button fix */
+        .modal-backdrop {
+            z-index: 1040;
+        }
+        .modal {
+            z-index: 1050;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-xxl bg-white p-0">
+        <!-- Spinner Start -->
+        <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+            <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <!-- Spinner End -->
+
+        <!-- Navbar & Hero Start -->
+        <div class="container-xxl position-relative p-0">
+            <nav class="navbar navbar-expand-lg navbar-light px-4 px-lg-5 py-3 py-lg-0">
+                <a href="" class="navbar-brand p-0">
+                    <h1 class="m-0"><i class="fa fa-search me-2"></i>Ecommerce <span class="fs-5 ms-2">Recommendation System</span></h1>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                    <span class="fa fa-bars"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <div class="navbar-nav ms-auto py-0">
+                        <a href="{{ url_for('index') }}" class="nav-item nav-link active">Home</a>
+                    </div>
+                    <button type="button" class="btn text-secondary ms-3" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fa fa-search"></i></button>
+                </div>
+            </nav>
+        </div>
+        <!-- Navbar & Hero End -->
+
+        <!-- Full Screen Product Search Modal Start -->
+        <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content" style="background: rgba(29, 29, 39, 0.7);">
+                    <div class="modal-header border-0">
+                        <button type="button" class="btn bg-white btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body d-flex align-items-center justify-content-center">
+                        <div style="max-width: 600px; width: 100%;">
+                            <h5 class="text-white text-center mb-4" id="searchModalLabel">Search for Products</h5>
+                            <!-- Product Search Form -->
+                            <form action="/recommendations" method="post" style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" class="form-control bg-transparent border-light p-3" name="prod" placeholder="Product name" required>
+                                <input type="number" class="form-control bg-transparent border-light p-3" name="nbr" placeholder="Number" style="width: 150px;">
+                                <button type="submit" class="btn btn-light px-4">Search</button> <!-- Button should submit the form -->
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Full Screen Product Search Modal End -->
+
+       <!-- Recommended Products Section -->
+{% if content_based_rec is defined and not content_based_rec.empty %}
+<div class="container recommended-products-section">
+    <h2 class="text-center mb-4">Prodcuts for you</h2>
+    <div class="row mt-4">
+        {% for index, product in content_based_rec.iterrows() %}
+        <div class="col-lg-4 col-md-6 col-sm-6 mb-4"> <!-- Changed col-lg-3 to col-lg-4 for 3 products per row -->
+            <div class="card">
+                <img src="{{ product['ImageURL'] }}" class="card-img-top" alt="{{ product['Name'] }}" style="height: 150px; object-fit: contain;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ truncate(product['Name'], 12) }}</h5>
+                    <p class="card-text text-muted">Brand: {{ product['Brand'] }}</p>
+                    <p class="card-text">Rating: <strong>{{ product['Rating'] | round(2) }}</strong></p>
+                    <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#productModal{{ index }}">Buy Now</button>
+                </div>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="productModal{{ index }}" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="productModalLabel">{{ product['Name'] }}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <img src="{{ product['ImageURL'] }}" class="img-fluid" alt="{{ product['Name'] }}" style="height: 200px;">
+                            </div>
+                            <div class="col-md-8">
+                                <p><strong>Brand:</strong> {{ product['Brand'] }}</p>
+                                <p><strong>Review Count:</strong> {{ product['ReviewCount'] }}</p>
+                                <p><strong>Rating:</strong> {{ product['Rating'] }}</p>
+                                <p><strong>Price:</strong> {{ product['Price'] }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+</div>
+
+
+    <!-- Footer Section -->
+    <footer class="footer bg-dark text-white mt-5">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-3 col-sm-6">
+                    <h5>About Us</h5>
+                    <p>Our eCommerce Recommendation System helps you discover personalized product suggestions tailored to your preferences. With cutting-edge algorithms, we bring you closer to the products you’ll love, making your shopping experience seamless and efficient. Browse, shop, and enjoy recommendations that matter.</p>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Services</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <h5>Support</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <h5>Contact Us</h5>
+                    <address>
+                        <strong>DataWizards</strong><br>
+                        Temple Street, Malmbe<br>
+                        Sri Lanka<br>
+                        <i class="fas fa-phone"></i> Phone: +9411567890<br>
+                        <i class="fas fa-envelope"></i> Email: info@datawizard.com
+                    </address>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <hr class="bg-light">
+                    <p class="text-center">© 2024 Ecommerce Recommendation System. All Rights Reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Load other libraries that depend on jQuery -->
+    <script src="{{ url_for('static', filename='lib/owlcarousel/owl.carousel.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/lightbox/js/lightbox.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/wow/wow.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    <!-- Initialize Isotope after everything is loaded -->
+    <script>
+        $(document).ready(function(){
+            var $portfolioContainer = $('.portfolio-container');
+            $portfolioContainer.isotope({
+                itemSelector: '.portfolio-item',
+                layoutMode: 'fitRows'
+            });
+        });
+    </script>
+
+</body>
+</html>

@@ -1,419 +1,263 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
     <title>Ecommerce Recommendation System</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Include jQuery and Bootstrap JS first -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+
+    <!-- Include Isotope -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js"></script>
+
+    <!-- Favicon -->
+    <link href="{{ url_for('static', filename='img/favicon.ico') }}" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="{{ url_for('static', filename='lib/animate/animate.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='lib/lightbox/css/lightbox.min.css') }}" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
 </head>
-<style>
-     
-     .btn-custom {
-  background-color: #FA5B3D; /* Custom button color */
-  border-color: #FA5B3D;
-  border-radius: 30px; /* Rounded edges */
-  padding: 10px 20px; /* Increased padding */
-  font-weight: bold; /* Bold text */
-  transition: background-color 0.3s ease; /* Smooth color transition */
-  color: white; /* Text color */
-}
 
-.btn-custom:hover {
-  background-color: #e04e3d; /* Slightly darker shade on hover */
-  border-color: #e04e3d;
-}
-.btn-custom2 {
-  background-color: #FA5B3D; /* Custom button color */
-  border-color: #FA5B3D;  
-  color: white; /* Text color */
-}
-
-.btn-custom2:hover {
-  background-color: #e04e3d; /* Slightly darker shade on hover */
-  border-color: #e04e3d;
-}
-.btn-custom3 {
-  background-color: #FA8072; /* Custom button color */
-  border-color: #FA8072;
-  transition: background-color 0.3s ease; /* Smooth color transition */
-  color: white; /* Text color */
-}
-
-      
-        .container {
-            margin-top: 50px;
-        }
-        .video-background {
-            width: 100%;
-            height: 600px; /* Set the height of the video here */
-            object-fit: cover; /* Ensure the video covers the entire container */
-        }
-        body {
-            background-color: #f8f9fa;
-        }
-        .navbar {
-            background-color: #555c64;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .navbar-brand {
-            color: #fff !important;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        .navbar-nav .nav-link {
-            color: #fff !important;
-            font-size: 1.1rem;
-            margin-right: 1rem;
-        }
-        .navbar-nav .nav-link:hover {
-            color: #ff7f50 !important;
-        }
-        .navbar-toggler {
-            border-color: #fff;
-        }
-        .btn-custom {
-            border-radius: 30px;
-        }
-
-        .modal-content {
-            background-color: #fff; /* Set modal content background color */
-            color: #000; /* Set modal content text color */
-        }
-        .modal-content.dark {
-            background-color: #000; /* Set modal content background color for dark theme */
-            color: #fff; /* Set modal content text color for dark theme */
-        }
-</style>
 <body>
-
-<!-- Modern Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark">
-  <a class="navbar-brand" href="#">Personalized Ecommerce Recommendation System</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-    <ul class="navbar-nav">
-      <li class="nav-item active">
-        <a class="nav-link" href="#"><i class="fas fa-home"></i> Home</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" id="settingsLink"><i class="fas fa-cog"></i> Settings</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link btn btn-outline-light btn-custom3" href="#" data-toggle="modal" data-target="#signupModal">Sign Up</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link btn btn-outline-light  btn-custom3" href="#" data-toggle="modal" data-target="#signinModal">Sign In</a>
-      </li>
-    </ul>
-  </div>
-</nav>
-
-
-<!-- Video -->
-<div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
-  <div class="carousel-inner">
-    <div class="carousel-item active">
-      <video class="video-background" autoplay loop muted>
-        <source src="static/v.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-    </div>
-  </div>
-</div>
-
-<!-- Go To Main Page Button -->
-<div class="text-center mt-5">
-  <button type="button" class="btn btn-custom btn-lg" data-toggle="modal" data-target="#searchModal">
-    <i class="fas fa-search"></i> <!-- Font Awesome Search Icon -->
-    Search Products
-  </button>
-</div>
-
-
-
-
-<!-- Search Modal -->
-<div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h5 class="modal-title" id="searchModalLabel">Search for Products</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-              </button>
-          </div>
-          <div class="modal-body">
-              <form action="/recommendations" method="post" style="display: flex; flex-direction: column;">
-                  <input type="text" class="form-control mb-2" name="prod" placeholder="Search for products..." required>
-                  <input type="number" class="form-control mb-2" name="nbr" placeholder="Number of products..." style="width: 100px;">
-                  <button type="submit" class="btn btn-custom btn-lg">Search</button>
-              </form>
-          </div>
-      </div>
-  </div>
-</div>
-
-{% if message %}
-<h5 style="margin-left:42%;margin-top:10px;">{{message}}</h5>
-{% endif %}
-
-<!-- jQuery and Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-
-
-{% if signup_message %}
-<h5 style="margin-left:42%;margin-top:10px; text:bold;">{{signup_message}}</h5>
-{% endif %}
-
-<div class="container mt-5">
-  <h2 class="text-center mb-4">Trending Products</h2>
-  <div class="row mt-4">
-    {% for index, product in trending_products.iterrows() %}
-    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-      <div class="card h-100 shadow-sm border-0 rounded-lg">
-        <div class="card-img-container" style="overflow: hidden; border-top-left-radius: 15px; border-top-right-radius: 15px;">
-          <img src="{{ product['ImageURL'] }}" class="card-img-top img-fluid" alt="{{ product['Name'] }}" style="height: 200px; object-fit: contain;">
-        </div>
-        <div class="card-body" >
-          <h5 class="card-title">{{ truncate(product['Name'], 12) }}</h5>
-          <p class="card-text text-muted">Brand: {{ product['Brand'] }}</p>
-          <p class="card-text">Rating: <strong>{{ product['Rating'] | round(2) }}</strong></p>
-          <button type="button" class="btn btn-custom3" data-toggle="modal" data-target="#productModal{{ index }}">Buy Now</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="productModal{{ index }}" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content rounded-lg">
-          <div class="modal-header">
-            <h5 class="modal-title" id="productModalLabel">{{ product['Name'] }}</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <div class="row">
-              <div class="col-md-4">
-                <img src="{{ product['ImageURL'] }}" class="img-fluid rounded" alt="{{ product['Name'] }}" style="height: 200px;">
-              </div>
-              <div class="col-md-8">
-                <p><strong>Brand:</strong> {{ product['Brand'] }}</p>
-                <p><strong>Review Count:</strong> {{ product['ReviewCount'] }}</p>
-                <p><strong>Rating:</strong> {{ product['Rating'] | round(2) }}</p>
-                <p><strong>Price:</strong> {{ product['Price'] }}</p>
-              </div>
+    <div class="container-xxl bg-white p-0">
+        <!-- Spinner Start -->
+        <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+            <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="sr-only">Loading...</span>
             </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-custom2 ">Add to Cart</button>
-          </div>
         </div>
-      </div>
+        <!-- Spinner End -->
+
+        <!-- Navbar & Hero Start -->
+        <div class="container-xxl position-relative p-0">
+            <nav class="navbar navbar-expand-lg navbar-light px-4 px-lg-5 py-3 py-lg-0">
+                <a href="" class="navbar-brand p-0">
+                    <h1 class="m-0"><i class="fa fa-search me-2"></i>Ecommerce <span class="fs-5 ms-2">Recommendation System</span></h1>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                    <span class="fa fa-bars"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <div class="navbar-nav ms-auto py-0">
+                        <a href="{{ url_for('index') }}" class="nav-item nav-link active">Home</a>
+                    </div>
+                    <button type="button" class="btn text-secondary ms-3" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fa fa-search"></i></button>
+                </div>
+            </nav>
+            <div class="container-xxl py-5 bg-primary hero-header mb-5">
+                <div class="container my-5 py-5 px-lg-5">
+                    <div class="row g-5 py-5">
+                        <div class="col-lg-6 text-center text-lg-start">
+                            <h1 class="text-white mb-4 animated zoomIn">All-in-one eCommerce platform to grow your business.</h1>
+                            <p class="text-white pb-3 animated zoomIn">Boost your sales with personalized product recommendations tailored to your customers' preferences. Our platform helps you deliver a seamless shopping experience that drives growth and increases customer engagement.</p>
+                            <h2 class="text-white mb-4 animated zoomIn">Search Your Recommendation by:</h2>
+                            <!-- Buttons to trigger the search modals -->
+                            <button  class="btn btn-light py-sm-3 px-sm-5 rounded-pill me-3 animated slideInLeft" data-bs-toggle="modal" data-bs-target="#searchModal">Product</button>
+                            <button class="btn btn-outline-light py-sm-3 px-sm-5 rounded-pill animated slideInRight" data-bs-toggle="modal" data-bs-target="#userSearchModal">User ID</button>
+                        </div>
+                        <div class="col-lg-6 text-center text-lg-start"></div>
+                    </div>
+                </div>
+            </div>
+
+             <!-- Full Screen Product Search Modal Start -->
+             <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-fullscreen">
+                    <div class="modal-content" style="background: rgba(29, 29, 39, 0.7);">
+                        <div class="modal-header border-0">
+                            <button type="button" class="btn bg-white btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body d-flex align-items-center justify-content-center">
+                            <div style="max-width: 600px; width: 100%;">
+                                <h5 class="text-white text-center mb-4" id="searchModalLabel">Search for Products</h5>
+                                <!-- Product Search Form -->
+                                <form action="/recommendations" method="post" style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="text" class="form-control bg-transparent border-light p-3" name="prod" placeholder="Product name" required>
+                                    <input type="number" class="form-control bg-transparent border-light p-3" name="nbr" placeholder="Number" style="width: 150px;">
+                                    <button type="submit" class="btn btn-light px-4">Search</button> <!-- Button should submit the form -->
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Full Screen Product Search Modal End -->
+<!-- Full Screen Search by User ID Modal Start -->
+<div class="modal fade" id="userSearchModal" tabindex="-1" role="dialog" aria-labelledby="userSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content" style="background: rgba(29, 29, 39, 0.7);">
+            <div class="modal-header border-0">
+                <button type="button" class="btn bg-white btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex align-items-center justify-content-center">
+                <div style="max-width: 600px; width: 100%;">
+                    <h5 class="text-white text-center mb-4" id="userSearchModalLabel">Search for Products by User ID</h5>
+                    <!-- User ID Search Form -->
+                    <form action="/recommendations_by_user_id" method="post" style="display: flex; gap: 10px; align-items: center;">
+                        <!-- The name attribute should match 'user_id' used in Flask route -->
+                        <input type="text" class="form-control bg-transparent border-light p-3" name="user_id" placeholder="Enter User ID" required>
+                        <button type="submit" class="btn btn-light px-4">Search</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    {% endfor %}
-  </div>
+</div>
+<!-- Full Screen Search by User ID Modal End -->
+
+
+
+      <!-- Trending Products Section -->
+<!-- Trending Products Section -->
+<div class="container-xxl py-5">
+    <div class="container px-lg-5">
+        <div class="section-title position-relative text-center mb-5 pb-2 wow fadeInUp" data-wow-delay="0.1s">
+            <h2 class="mt-2">Trending Products</h2>
+        </div>
+
+        <div class="row g-4 portfolio-container">
+            {% for index, product in trending_products.iterrows() %}
+            <div class="col-lg-4 col-md-6 portfolio-item first wow zoomIn" data-wow-delay="0.1s">
+                <div class="position-relative rounded overflow-hidden">
+                    <!-- Image section -->
+                    <img class="img-fluid w-100" src="{{ product['ImageURL'] }}" alt="{{ product['Name'] }}" style="height: 300px; object-fit: contain;">
+                    
+                    <!-- Wrapping details in a button -->
+                    <button type="button" class="btn btn-link w-100" data-bs-toggle="modal" data-bs-target="#productModal{{ index }}" style="text-align: left; border: none;">
+                        <div class="portfolio-overlay">
+                            <div class="mt-auto">
+                                <small class="text-white"><i class="fa fa-tag me-2"></i>{{ product['Brand'] }}</small>
+                                <a class="h5 d-block text-white mt-1 mb-0" href="#">{{ truncate(product['Name'], 12) }}</a>
+                                <p class="text-white">Rating: {{ product['Rating'] | round(2) }}</p>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal for Product Details -->
+            <div class="modal fade" id="productModal{{ index }}" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-lg">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="productModalLabel">{{ product['Name'] }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <!-- Fixed Image Size for the Popup -->
+                                    <img src="{{ product['ImageURL'] }}" class="img-fluid rounded" alt="{{ product['Name'] }}" style="width: 200px; height: 300px; object-fit: cover;">
+                                </div>
+                                <div class="col-md-8">
+                                    <p><strong>Brand:</strong> {{ product['Brand'] }}</p>
+                                    <p><strong>Rating:</strong> {{ product['Rating'] }}</p>
+                                    <p><strong>Price:</strong> ${{ product['Price'] }}</p>
+                                    <p><strong>Description:</strong> {{ product['Description'] }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Add to Cart</button>
+                            <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 
-
-
-
-
-<!-- Bootstrap modal for sign up -->
-<div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="signupModalLabel">Sign Up</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form action="/signup" method="post">
-          <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" id="username" name="username" required>
-          </div>
-          <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input type="email" class="form-control" id="email" name="email" required>
-          </div>
-          <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" required>
-          </div>
-          <button type="submit" class="btn btn-primary">Sign Up</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Bootstrap modal for sign in -->
-<div class="modal fade" id="signinModal" tabindex="-1" aria-labelledby="signinModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="signinModalLabel">Sign In</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form action="/signin" method="post">
-          <div class="mb-3">
-            <label for="signinUsername" class="form-label">Username</label>
-            <input type="text" class="form-control" id="signinUsername" name="signinUsername" required>
-          </div>
-          <div class="mb-3">
-            <label for="signinPassword" class="form-label">Password</label>
-            <input type="password" class="form-control" id="signinPassword" name="signinPassword" required>
-          </div>
-          <button type="submit" class="btn btn-primary">Sign In</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-<!-- Settings Modal -->
-<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <h5>Choose Theme:</h5>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="theme" id="defaultTheme" value="default" checked>
-          <label class="form-check-label" for="defaultTheme">
-            Default
-          </label>
+<!-- Footer Section -->
+<footer class="footer bg-dark text-white mt-5">
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-md-3 col-sm-6">
+                <h5>About Us</h5>
+                <p>Our eCommerce Recommendation System helps you discover personalized product suggestions tailored to your preferences. With cutting-edge algorithms, we bring you closer to the products you’ll love, making your shopping experience seamless and efficient. Browse, shop, and enjoy recommendations that matter.</p>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <h5>Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Services</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <h5>Support</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <h5>Contact Us</h5>
+                <address>
+                    <strong>DataWizards</strong><br>
+                    Temple Street, Malmbe<br>
+                    Sri Lanka<br>
+                    <i class="fas fa-phone"></i> Phone: +9411567890<br>
+                    <i class="fas fa-envelope"></i> Email: info@datawizard.com
+                </address>
+            </div>
         </div>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="theme" id="blackTheme" value="black">
-          <label class="form-check-label" for="blackTheme">
-            Black Theme
-          </label>
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <hr class="bg-light">
+                <p class="text-center">© 2024 Ecommerce Recommendation System. All Rights Reserved.</p>
+            </div>
         </div>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="theme" id="greenTheme" value="green">
-          <label class="form-check-label" for="greenTheme">
-            Green Theme
-          </label>
-        </div>
-        <hr>
-        <h5>Zoom:</h5>
-        <button type="button" class="btn btn-custom2  mr-2" id="zoomIn">Zoom In</button>
-        <button type="button" class="btn btn-custom2 " id="zoomOut">Zoom Out</button>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-warning" id="applyTheme">Apply</button>
-      </div>
     </div>
-  </div>
-</div>
-
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-<script>
-  // Handle click on Settings link to open the modal
-  document.getElementById('settingsLink').addEventListener('click', function() {
-    $('#settingsModal').modal('show');
-  });
-
-  // Handle theme apply button click
-  document.getElementById('applyTheme').addEventListener('click', function() {
-    // Get the selected theme value
-    var selectedTheme = document.querySelector('input[name="theme"]:checked').value;
-
-    // Apply the selected theme
-    if (selectedTheme === 'black') {
-      document.body.style.backgroundColor = 'black';
-      document.body.style.color = 'white';
-    } else if (selectedTheme === 'green') {
-      document.body.style.backgroundColor = 'green';
-      document.body.style.color = 'white';
-    } else {
-      // Default theme
-      document.body.style.backgroundColor = '#f8f9fa';
-      document.body.style.color = 'black';
-    }
-
-    // Close the modal
-    $('#settingsModal').modal('hide');
-  });
-
-  // Handle zoom in button click
-  document.getElementById('zoomIn').addEventListener('click', function() {
-    document.body.style.zoom = "115%";
-  });
-
-  // Handle zoom out button click
-  document.getElementById('zoomOut').addEventListener('click', function() {
-    document.body.style.zoom = "100%";
-  });
-</script>
-
-
-
-<!--footer-->
-<footer class="footer" style="background-color: #555c64; color: #ffffff;  margin-top: 300px;"> <!-- Light gray background -->
-  <div class="container" style="padding-top:20px;">
-      <div class="row">
-          <div class="col-md-3 col-sm-6">
-              <h5>About Us</h5>
-              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla pretium risus quis urna maximus, eget vestibulum risus vestibulum.</p>
-          </div>
-          <div class="col-md-3 col-sm-6">
-              <h5>Quick Links</h5>
-              <ul class="list-unstyled">
-                  <li><a href="#">Home</a></li>
-                  <li><a href="#">About</a></li>
-                  <li><a href="#">Services</a></li>
-                  <li><a href="#">Contact</a></li>
-              </ul>
-          </div>
-          <div class="col-md-3 col-sm-6">
-              <h5>Support</h5>
-              <ul class="list-unstyled">
-                  <li><a href="#">FAQ</a></li>
-                  <li><a href="#">Terms of Service</a></li>
-                  <li><a href="#">Privacy Policy</a></li>
-              </ul>
-          </div>
-          <div class="col-md-3 col-sm-6">
-              <h5>Contact Us</h5>
-              <address>
-                <strong>DataWizards</strong><br>
-                Temple Street, Malmbe<br>
-                Sri Lanka<br>
-                <i class="fas fa-phone"></i> Phone: +9411567890<br>
-                <i class="fas fa-envelope"></i> Email: info@datawizard.com
-            </address>
-          </div>
-      </div>
-      <div class="row mt-3">
-          <div class="col-md-12">
-              <hr class="bg-light">
-              <p class="text-center">© 2024 Ecommerce Recommendation System. All Rights Reserved.</p>
-          </div>
-      </div>
-  </div>
 </footer>
 
 
+        <!-- Load other libraries that depend on jQuery -->
+        <script src="{{ url_for('static', filename='lib/owlcarousel/owl.carousel.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='lib/lightbox/js/lightbox.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='lib/wow/wow.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+        <!-- Initialize Isotope after everything is loaded -->
+        <script>
+            $(document).ready(function(){
+                var $portfolioContainer = $('.portfolio-container');
+                $portfolioContainer.isotope({
+                    itemSelector: '.portfolio-item',
+                    layoutMode: 'fitRows'
+                });
+            });
+        </script>
+    </div>
 </body>
+
 </html>
