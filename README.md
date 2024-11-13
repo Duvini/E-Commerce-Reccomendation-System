@@ -33,18 +33,29 @@ The **E-Commerce Recommendation System** is a machine learning-based application
   - Git for version control
 
 ## 📂 Project Structure
-E-Commerce-Reccomendation-System/ ├── data/ # Datasets for training and testing ├── notebooks/ # Jupyter Notebooks for analysis and experiments ├── src/ # Source code │ ├── data_preprocessing.py │ ├── recommendation.py │ ├── model_training.py │ └── app.py # Flask application ├── templates/ # HTML templates for web interface ├── static/ # Static files (CSS, JS) ├── README.md # Project documentation └── requirements.txt # Dependencies
 
+```plaintext
+E-Commerce-Reccomendation-System/
+├── data/                   # Datasets for training and testing
+├── notebooks/              # Jupyter Notebooks for analysis and experiments
+├── src/                    # Source code
+│   ├── data_preprocessing.py
+│   ├── recommendation.py
+│   ├── model_training.py
+│   └── app.py              # Flask application
+├── templates/              # HTML templates for web interface
+├── static/                 # Static files (CSS, JS)
+├── README.md               # Project documentation
+└── requirements.txt        # Dependencies
 ## 🛠️ Installation
 
 1. **Clone the Repository**  
    ```bash
    git clone https://github.com/Duvini/E-Commerce-Reccomendation-System.git
    cd E-Commerce-Reccomendation-System
-   python -m venv venv
+python -m venv venv
 source venv/bin/activate   # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python src/app.py
 
-Copy and paste this into your `README.md` file to present a professional overview of your project!
 
